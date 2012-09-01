@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Pace Calculator</title>
+  <link href='bootstrap.min.css' rel='stylesheet'>
+  <script src='jquery-1.8.1.min.js'></script>
+  <script src='jquery-ui-1.8.23.custom.min.js'></script>
+  <script src='angular-1.0.1.min.js'></script>
+  <script src='slider.js'></script>
+  <link href='jquery-ui-1.8.23.custom.css' rel='stylesheet'>
+  <script>
+    function PaceCtrl($scope) {
+      $scope.range = [60 * 3, 60 * 5];
+      $scope.min   = 1
+      $scope.max   = 60 * 10;
+      $scope.n     = 5
+      $scope.distances = [
+        1,
+        1.6,
+        5,
+        10,
+        21.1,
+        42.2
+      ]
+
+      $scope.labeledDistances = [
+        '1km',
+        '1m',
+        '5km',
+        '10km',
+        'Half',
+        'Full'
+      ]
+
+      updateData = function() {
+        var rows = []
+        for(var s_per_km = $scope.range[0]; s_per_km <= $scope.range[1]; s_per_km += $scope.n) {
+          var cols = []
+          for (distance in $scope.distances) {
+            cols.push( Math.round(s_per_km * $scope.distances[distance], 0) )
+          }
+          rows.push(cols)
+        }
+
+        $scope.rows = rows
+      }
+      $scope.$watch('range', updateData)
+      $scope.$watch('n', updateData)
+    }
+
+    function pad(num, size) {
+      var s = num+"";
+      while (s.length < size) s = "0" + s;
+      return s;
+    }
+
+    function formatTime(totalSec) {
+      hours = parseInt( totalSec / 3600 ) % 24;
+      minutes = parseInt( totalSec / 60 ) % 60;
+      seconds = totalSec % 60;
+
+      if (hours == 0) {
+        return minutes + ":" + pad(seconds, 2)
+      } else {
+        return hours + ":" + pad(minutes, 2) + ':' + pad(seconds, 2)
+      }
+    }
+  </script>
+</head>
+<body ng-app="myApp">
+  <div class='container' ng-controller="PaceCtrl">
+    <h1>Pace Calculator</h1>
+    <div class='row'>
+      <div class='well span6'>
+        <label>Range ({{range[0] | formatTime}} &mdash; {{range[1] | formatTime}})</label>
+        <div slider></div>
+        <label>Increment ({{n}})</label>
+        <div nslider></div>
+      </div>
+    </div>
+    <div class='row'>
+      <table class='table span6' style='width: auto'>
+        <thead>
+          <tr>
+            <th ng-repeat='label in labeledDistances'>{{label}}</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr ng-repeat='cols in rows'>
+            <td ng-repeat='col in cols'>{{col | formatTime}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
